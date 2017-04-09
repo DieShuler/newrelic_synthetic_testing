@@ -11,11 +11,15 @@ function retryOnFail(scriptSteps)
       console.log("This is run number: " + i + " of 3");
       return scriptSteps(), success = true;     
     } catch(err){
-      console.log("Script failed, trying again.");
+      console.log("Script failed, trying " + (3 - i ) + " more times.");
       continue;
     }
   }
+  if (!success){
+      console.log ('Browser script execution FAILED.');
+  }
 }
+
 
 
 
@@ -46,7 +50,7 @@ retryOnFail(function() {
       } catch(err){
         log(stepNo, ': ' + stepName + ' failed: ' + err.message);
         continueFlag = false;
-        throw(err);
+        //throw(err);
       }
     }
   }
@@ -119,9 +123,6 @@ retryOnFail(function() {
     console.log('Setting User-Agent to ' + UserAgent);
   }
 
-  // Get browser capabilities and do nothing with it, so that we start with a then-able command
-  // ### I'm not quite sure why this is necessary.  I'm going to see what starting on the browser.get does.
-  //$browser.getCapabilities().then(function () { })
 
   // Step 1
   // First step has to be a function with a return value so we can start the .then chain.
@@ -138,24 +139,40 @@ retryOnFail(function() {
   startScript()
   
   // Step2
-  .then(stepCheck(continueFlag, 2.1, 'Find clickElement "Electronics"', function(){$browser.waitForAndFindElement(By.linkText("Electronics"), StepTimeout);}))
-  .then(stepCheck(continueFlag, 2.2, 'Click Element "Electronics"', function(element){ element.click(); }))
+  .then(stepCheck(continueFlag, 2.1, 'Find clickElement "Electronics"', function(){ return $browser.waitForAndFindElement(By.linkText("Blargle"), StepTimeout)
+  // .then(stepCheck(continueFlag, 2.1, 'Find clickElement "Electronics"', function(){ return $browser.waitForAndFindElement(By.linkText("Electronics"), StepTimeout)
+  .then(function(element) {
+    element.click();
+  })
+  }))
 
   // Step 3
-  .then(stepCheck(continueFlag, 3.1, 'Find clickElement "//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"', $browser.waitForAndFindElement(By.xpath("//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"), StepTimeout)))
-  .then(stepCheck(continueFlag, 3.2, 'Click on clickElement "//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"', function(element) { element.click(); }))
+  .then(stepCheck(continueFlag, 3.1, 'Find clickElement "//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"', function(){ return $browser.waitForAndFindElement(By.xpath("//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"), StepTimeout)
+  .then(function(element){
+    element.click();
+  })
+  }))
   
   // Step 4
-  .then(stepCheck(continueFlag, 4.1, 'Find "input.button-2.product-box-add-to-cart-button"', $browser.waitForAndFindElement(By.css("input.button-2.product-box-add-to-cart-button"), StepTimeout)))
-  .then(stepCheck(continueFlag, 4.2, 'clickElement "input.button-2.product-box-add-to-cart-button"', function(element){ element.click(); }))
+  .then(stepCheck(continueFlag, 4.1, 'Find "input.button-2.product-box-add-to-cart-button"', function() { return $browser.waitForAndFindElement(By.css("input.button-2.product-box-add-to-cart-button"), StepTimeout)
+  .then(function(element){
+    element.click();
+  })
+  }))
 
   // Step 5
-  .then(stepCheck(continueFlag, 5.1, 'Find "add-to-cart-button-14"', $browser.waitForAndFindElement(By.id("add-to-cart-button-14"), StepTimeout)))
-  .then(stepCheck(continueFlag, 5.2, 'Click Element "add-to-cart-button-14"', function(element){ element.click(); }))
+  .then(stepCheck(continueFlag, 5.1, 'Find "add-to-cart-button-14"', function() { return $browser.waitForAndFindElement(By.id("add-to-cart-button-14"), StepTimeout)
+  .then(function(element){
+    element.click();
+  })
+  }))
 
   // Step 6
-  .then(stepCheck(continueFlag, 6.1, 'Find clickElement "//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"', $browser.waitForAndFindElement(By.xpath("//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"), StepTimeout)))
-  .then(stepCheck(continueFlag, 6.2, 'Click Element "//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"', function(element){ element.click(); }))
+  .then(stepCheck(continueFlag, 6.1, 'Find clickElement "//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"', function() { return $browser.waitForAndFindElement(By.xpath("//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"), StepTimeout)
+  .then(function(element){
+    element.click();
+  })
+  }))
 
   // Das Ende
   .then(function() {
