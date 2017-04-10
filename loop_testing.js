@@ -5,21 +5,20 @@ function retryOnFail(scriptSteps)
 {
   var retryCount = 3;
   var success = false;
-  for (var i = 1; i <= retryCount && !success; i++)
+  for (var i = 0; i < retryCount && !success; i++)
   {
     try {
-      console.log("This is run number: " + i + " of 3");
-      return scriptSteps(), success = true;     
+      console.log("This is run number: " + (i + 1) + " of "+ retryCount);
+      scriptSteps();
+      success = true;     
     } catch(err){
-      console.log("Script failed, trying " + (3 - i ) + " more times.");
-      continue;
+      console.log("Script failed, trying again.");
     }
   }
-  if (!success){
-      console.log ('Browser script execution FAILED.');
+  if (!success) {
+    throw "Script failed all " + retryCount + " attempts.  Investigate alert.";
   }
 }
-
 
 
 
@@ -50,7 +49,7 @@ retryOnFail(function() {
       } catch(err){
         log(stepNo, ': ' + stepName + ' failed: ' + err.message);
         continueFlag = false;
-        //throw(err);
+        throw(err);
       }
     }
   }
@@ -122,65 +121,62 @@ retryOnFail(function() {
     $browser.addHeader('User-Agent', UserAgent);
     console.log('Setting User-Agent to ' + UserAgent);
   }
-
-
-  // Step 1
-  // First step has to be a function with a return value so we can start the .then chain.
-  function startScript(){ 
-    log(1, '$browser.get("http://nop.cs.rackspace.com/")');
-    try {
-      return $browser.get("http://nop.cs.rackspace.com/");
-    } catch(err) {
-      log(1, "Couldn't load http://nop.cs.rackspace.com/: " + err.message);
-      continueFlag = false;
-      return;
-    }
-  }
-  startScript()
+  
+  log(1, '$browser.get("http://nop.cs.rackspace.com/")');
+  $browser.get("http://nop.cs.rackspace.com/");
   
   // Step2
-  .then(stepCheck(continueFlag, 2.1, 'Find clickElement "Electronics"', function(){ return $browser.waitForAndFindElement(By.linkText("Blargle"), StepTimeout)
-  // .then(stepCheck(continueFlag, 2.1, 'Find clickElement "Electronics"', function(){ return $browser.waitForAndFindElement(By.linkText("Electronics"), StepTimeout)
-  .then(function(element) {
-    element.click();
-  })
-  }))
+  //log(2, 'Find "Electronics" link and click.');
+  console.log("Step 2: Find electronics started");
+  $browser.waitForElement(By.linkText("Electronics"), StepTimeout);
+  var electronics = $browser.findElement(By.linkText("Electronics"));
+  electronics.then(function(electronics){ 
+    console.log("starting then function"); 
+    electronics.click(); 
+    console.log("then fucntion ran");
+    })
+  .thenCatch(function(err){ 
+    console.log("thenCatch function ran");
+    throw err; 
+    });
+  console.log("Step 2: Find electronics complete");
+
+/* 
+  try {
+    electronics.click();
+    log(1.1, "Clicked the thing.");
+  } catch(err) {
+    log(1.1, "Clicking didn't work.");
+    throw err;
+  }
+  */
 
   // Step 3
-  .then(stepCheck(continueFlag, 3.1, 'Find clickElement "//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"', function(){ return $browser.waitForAndFindElement(By.xpath("//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"), StepTimeout)
-  .then(function(element){
-    element.click();
-  })
-  }))
-  
+  log(3, 'Find "Camera & Photo" link and click.');
+  $browser.waitForElement(By.xpath("//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"), StepTimeout);
+  var camera = $browser.findElement(By.xpath("//div[@class=\'side-2\']//a[normalize-space(.)=\'Camera & photo\']"));
+  camera.click();
+                                    
   // Step 4
-  .then(stepCheck(continueFlag, 4.1, 'Find "input.button-2.product-box-add-to-cart-button"', function() { return $browser.waitForAndFindElement(By.css("input.button-2.product-box-add-to-cart-button"), StepTimeout)
-  .then(function(element){
-    element.click();
-  })
-  }))
+  log(4, 'Add to cart');
+  $browser.waitForElement(By.css("input.button-2.product-box-add-to-cart-button"), StepTimeout);
+  var addCart1 = $browser.findElement(By.css("input.button-2.product-box-add-to-cart-button"));
+  addCart1.click();
 
   // Step 5
-  .then(stepCheck(continueFlag, 5.1, 'Find "add-to-cart-button-14"', function() { return $browser.waitForAndFindElement(By.id("add-to-cart-button-14"), StepTimeout)
-  .then(function(element){
-    element.click();
-  })
-  }))
+  log(5, 'Second add to cart step');
+  $browser.waitForElement(By.id("add-to-cart-button-14"), StepTimeout);
+  var addCart2 = $browser.findElement(By.id("add-to-cart-button-14"));
+  addCart2.click();
 
   // Step 6
-  .then(stepCheck(continueFlag, 6.1, 'Find clickElement "//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"', function() { return $browser.waitForAndFindElement(By.xpath("//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"), StepTimeout)
-  .then(function(element){
-    element.click();
-  })
-  }))
-
+  log(6, 'Go to cart.');
+  $browser.waitForElement(By.xpath("//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"), StepTimeout);
+  var footer = $browser.findElement(By.xpath("//div[@class=\'footer-upper\']//a[.=\'Shopping cart\']"));
+  footer.click();
+  
   // Das Ende
-  .then(function() {
-    log(lastStep, '');
-    console.log('Browser script execution SUCCEEDED.');
-  }, function(err) {
-    console.log ('Browser script execution FAILED.');
-    throw(err);
-  })
+  log(lastStep, '');
+  console.log('Browser script execution SUCCEEDED.');
 });
 /** END OF SCRIPT **/
